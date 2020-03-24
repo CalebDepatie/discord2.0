@@ -18,6 +18,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.IOException;
 
 
 public class Main extends Application {
@@ -49,6 +50,12 @@ public class Main extends Application {
                 userName[0] = user.getText();
                 SenderName = userName[0].toString(); //define the senders name internally
                 login.close();
+            }
+        });
+        grid.addEventHandler(KeyEvent.KEY_PRESSED, ev -> {
+            if (ev.getCode() == KeyCode.ENTER) {
+                confirm.fire();
+                ev.consume();
             }
         });
 
@@ -83,6 +90,11 @@ public class Main extends Application {
                     Message temp = new Message(console.getText(), SenderName);
                     System.out.println(temp.toDebugString());
                     messages.add(temp);
+                    try {
+                        ChatLog.add(temp);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     console.clear();
                 }
             });
