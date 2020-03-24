@@ -1,4 +1,5 @@
 import java.util.Calendar;
+import java.text.SimpleDateFormat;
 
 public class Message {
     public String Content;
@@ -13,6 +14,7 @@ public class Message {
 
     //debug console function
     public String toString() {
-        return "Content: " + this.Content + "\nSender: " + this.Sender + "\nTime: " + this.Time.toString();
+        SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        return "Content: " + this.Content + "\nSender: " + this.Sender + "\nTime: " + fmt.format(this.Time.getTime());
     }
 }

@@ -46,7 +46,7 @@ public class Main extends Application {
             @Override
             public void handle(ActionEvent actionEvent) {
                 userName[0] = user.getText();
-                System.out.println(userName[0]);
+                SenderName = userName[0].toString(); //define the senders name internally
                 login.close();
             }
         });
@@ -56,7 +56,6 @@ public class Main extends Application {
         login.show();
 
         if(userName[0]!= null){
-            this.SenderName = userName[0].toString();
             return true;
         }else{
             return false;
