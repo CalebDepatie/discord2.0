@@ -27,11 +27,13 @@ public class Main extends Application {
     boolean login(){
         Stage login = new Stage();
 
+        //create login window
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(10, 10, 10, 10));
         grid.setVgap(5);
         grid.setHgap(5);
 
+        //initialize login window appearance
         final String[] userName = new String[1];
         TextField user = new TextField();
         user.setPromptText("Enter UserName");
@@ -43,6 +45,7 @@ public class Main extends Application {
         Button confirm = new Button("Confirm");
         grid.add(confirm, 1, 1);
 
+        //action event when user inputs the username
         confirm.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
@@ -58,6 +61,7 @@ public class Main extends Application {
             }
         });
 
+        //display the login window
         Scene start = new Scene(grid, 300, 80);
         login.setScene(start);
         login.show();
@@ -71,7 +75,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-
+            //part of window that displays user's username
             Rectangle pplBox = new Rectangle(650, 0, 250, 500);
             pplBox.setFill(Color.rgb(52, 55, 61));
 
@@ -88,7 +92,9 @@ public class Main extends Application {
                 public void handle(ActionEvent event) {
                     Message temp = new Message(console.getText(), SenderName);
                     System.out.println(temp.toDebugString());
+                    //add the message to observable list
                     messages.add(temp);
+                    //add message to the user's respective chat log
                     try {
                         ChatLog.add(temp);
                     } catch (IOException e) {
@@ -97,6 +103,7 @@ public class Main extends Application {
                     console.clear();
                 }
             });
+            //update the console field
             console.setPromptText("Write a message...");
             console.setPrefWidth(570);
 
@@ -106,7 +113,7 @@ public class Main extends Application {
             //Object to display messages
             ListView<Message> list = new ListView<Message>();
             list.setItems(messages);
-            //Add cell tooltip
+            //Add cell tooltip once cursor hovers over a sent message
             list.setCellFactory(cell -> new ListCell<Message>() {
                 @Override
                 protected void updateItem(Message message, boolean empty) {
@@ -122,7 +129,7 @@ public class Main extends Application {
                 }
             });
 
-            // root
+            // root to setup chat window
             BorderPane root = new BorderPane();
             root.setPadding(new Insets(20)); // space between elements and window border
             root.setBottom(message);
@@ -138,6 +145,7 @@ public class Main extends Application {
                 }
             });
 
+            //display the chat window
             Scene scene = new Scene(root, 900, 500);
             scene.getStylesheets().add("style.css");
             stage.setTitle("Discord 2.0");
