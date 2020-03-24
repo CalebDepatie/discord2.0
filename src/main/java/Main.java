@@ -122,7 +122,6 @@ public class Main extends Application {
                 }
             });
 
-
             // root
             BorderPane root = new BorderPane();
             root.setPadding(new Insets(20)); // space between elements and window border

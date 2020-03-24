@@ -10,3 +10,13 @@
   -fx-background-color: rgb(99, 111, 130);
   -fx-text-fill: white;
 }
+
+.list-cell{
+  -fx-background-color: rgb(59, 63, 71);
+  -fx-text-fill: white;
+}
+
+.list-cell:filled:hover {
+    -fx-background-color: rgb(48, 50, 56);
+    -fx-text-fill: white;
+}
