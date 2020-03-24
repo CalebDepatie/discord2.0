@@ -1,0 +1,12 @@
+.root{
+  -fx-background-color: rgb(59, 63, 71);
+}
+
+.button{
+  -fx-background-color: rgb(162, 170, 184);
+}
+
+#console{
+  -fx-background-color: rgb(99, 111, 130);
+  -fx-text-fill: white;
+}

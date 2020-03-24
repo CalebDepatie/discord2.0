@@ -1,5 +1,3 @@
-package sample;
-
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -13,7 +11,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javafx.fxml.FXMLLoader;
 
 import java.io.File;
 
@@ -89,9 +86,7 @@ public class Main extends Application {
             root.getChildren().add(pplBox);
 
             Scene scene = new Scene(root, 900, 500);
-            File f = new File("style.css");
-            scene.getStylesheets().clear();
-            scene.getStylesheets().add("file:///" + f.getAbsolutePath().replace("\\", "/"));
+            scene.getStylesheets().add("style.css");
             stage.setTitle("Discord 2.0");
             stage.setScene(scene);
             stage.show();

@@ -16,7 +16,7 @@ version = 1.0
 
 jar {
     manifest {
-        attributes 'Main-Class': 'sample.Main',
+        attributes 'Main-Class': 'Main',
                 'Implementation-Title': 'Dev Gang Project',
                 'Implementation-Version': version
     }
