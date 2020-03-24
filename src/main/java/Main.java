@@ -1,4 +1,6 @@
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -6,6 +8,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -16,6 +20,8 @@ import java.io.File;
 
 
 public class Main extends Application {
+
+    public String SenderName;
 
     boolean login(){
         Stage login = new Stage();
@@ -50,6 +56,7 @@ public class Main extends Application {
         login.show();
 
         if(userName[0]!= null){
+            this.SenderName = userName[0].toString();
             return true;
         }else{
             return false;
@@ -65,11 +72,17 @@ public class Main extends Application {
             TextField console = new TextField();
             console.setId("console");
 
+            //List of current messages
+            ObservableList<Message> messages = FXCollections.observableArrayList();
+
             // bottom respectively "button area"
             HBox message = new HBox();
             Button send = new Button("Send");
             send.setOnAction(new EventHandler<ActionEvent>() {
                 public void handle(ActionEvent event) {
+                    Message temp = new Message(console.getText(), SenderName);
+                    System.out.println(temp);
+                    messages.add(temp);
                     console.clear();
                 }
             });
@@ -84,6 +97,14 @@ public class Main extends Application {
             root.setPadding(new Insets(20)); // space between elements and window border
             root.setBottom(message);
             root.getChildren().add(pplBox);
+
+            //Press enter activates the 'send' button
+            root.addEventHandler(KeyEvent.KEY_PRESSED, ev -> {
+                if (ev.getCode() == KeyCode.ENTER) {
+                    send.fire();
+                    ev.consume();
+                }
+            });
 
             Scene scene = new Scene(root, 900, 500);
             scene.getStylesheets().add("style.css");
