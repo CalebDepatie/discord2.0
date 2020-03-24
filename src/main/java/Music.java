@@ -11,11 +11,6 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class Music{
 
-    public static enum Volume {
-        MUTE, LOW, MEDIUM, HIGH
-    }
-    public static Volume volume = Volume.LOW;
-
     public void SoundClipTest() {
         try {
             File soundFile = new File("Music.wav");
