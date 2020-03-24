@@ -1,0 +1,25 @@
+plugins {
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.8'
+}
+
+repositories {
+    mavenCentral()
+}
+
+javafx {
+    version = "13"
+    modules = [ 'javafx.controls' ]
+}
+
+version = 1.0
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'sample.Main',
+                'Implementation-Title': 'Dev Gang Project',
+                'Implementation-Version': version
+    }
+}
+
+mainClassName = 'main'
