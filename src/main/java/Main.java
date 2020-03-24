@@ -7,6 +7,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -80,7 +81,7 @@ public class Main extends Application {
             send.setOnAction(new EventHandler<ActionEvent>() {
                 public void handle(ActionEvent event) {
                     Message temp = new Message(console.getText(), SenderName);
-                    System.out.println(temp);
+                    System.out.println(temp.toDebugString());
                     messages.add(temp);
                     console.clear();
                 }
@@ -91,10 +92,16 @@ public class Main extends Application {
             message.getChildren().addAll(console, send);
             message.setAlignment(Pos.BOTTOM_LEFT);
 
+            //Object to display messages
+            ListView<Message> list = new ListView<Message>();
+            list.setItems(messages);
+
             // root
             BorderPane root = new BorderPane();
             root.setPadding(new Insets(20)); // space between elements and window border
             root.setBottom(message);
+            root.setCenter(list);
+            root.setMargin(list, new Insets(0,260,20,0));
             root.getChildren().add(pplBox);
 
             //Press enter activates the 'send' button

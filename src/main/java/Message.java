@@ -12,8 +12,13 @@ public class Message {
         this.Time = Calendar.getInstance();
     }
 
-    //debug console function
+    //Message format
     public String toString() {
+        return this.Sender + ": " + this.Content;
+    }
+
+    //debug console function
+    public String toDebugString() {
         SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
         return "Content: " + this.Content + "\nSender: " + this.Sender + "\nTime: " + fmt.format(this.Time.getTime());
     }
