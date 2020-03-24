@@ -80,6 +80,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+            Music music = new Music();
+            music.SoundClipTest();
             //part of window that displays user's
             ListView<User> pplBox = new ListView<User>();
             pplBox.setPrefSize(220, 480);
