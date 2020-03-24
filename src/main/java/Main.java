@@ -17,12 +17,15 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 
 
 public class Main extends Application {
 
     public String SenderName;
+    public ObservableList<User> Users;
 
     boolean login(){
         Stage login = new Stage();
@@ -51,6 +54,7 @@ public class Main extends Application {
             public void handle(ActionEvent actionEvent) {
                 userName[0] = user.getText();
                 SenderName = userName[0].toString(); //define the senders name internally
+                Users.add(new User(SenderName, null)); //Add self to user list
                 login.close();
             }
         });
@@ -75,9 +79,27 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-            //part of window that displays user's username
-            Rectangle pplBox = new Rectangle(650, 0, 250, 500);
-            pplBox.setFill(Color.rgb(52, 55, 61));
+            //part of window that displays user's
+            ListView<User> pplBox = new ListView<User>();
+            pplBox.setPrefSize(220, 480);
+            pplBox.setId("pplBox");
+            Users = FXCollections.observableArrayList();
+            pplBox.setItems(Users);
+            //I wanted to set the CSS for these cells in particular, so I had to do this i think
+            pplBox.setCellFactory(cell -> new ListCell<User>() {
+                @Override
+                protected void updateItem(User user, boolean empty) {
+                    super.updateItem(user, empty);
+                    super.setId("pplBox");
+                    if(user == null || empty) {
+                        setText(null);
+                        setTooltip(null);
+                    } else {
+                        setText(user.toString());
+                        //setTooltip(new Tooltip(user.ip.toString()));
+                    }
+                }
+            });
 
             TextField console = new TextField();
             console.setId("console");
@@ -134,8 +156,8 @@ public class Main extends Application {
             root.setPadding(new Insets(20)); // space between elements and window border
             root.setBottom(message);
             root.setCenter(list);
-            root.setMargin(list, new Insets(0,260,20,0));
-            root.getChildren().add(pplBox);
+            root.setMargin(list, new Insets(0,20,20,0));
+            root.setRight(pplBox);
 
             //Press enter activates the 'send' button
             root.addEventHandler(KeyEvent.KEY_PRESSED, ev -> {
