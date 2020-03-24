@@ -6,9 +6,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
@@ -19,6 +17,7 @@ import javafx.stage.Stage;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 
 
 public class Main extends Application {
@@ -107,6 +106,22 @@ public class Main extends Application {
             //Object to display messages
             ListView<Message> list = new ListView<Message>();
             list.setItems(messages);
+            //Add cell tooltip
+            list.setCellFactory(cell -> new ListCell<Message>() {
+                @Override
+                protected void updateItem(Message message, boolean empty) {
+                    super.updateItem(message, empty);
+                    if(message == null || empty) {
+                        setText(null);
+                        setTooltip(null);
+                    } else {
+                        SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                        setText(message.toString());
+                        setTooltip(new Tooltip(fmt.format(message.Time.getTime())));
+                    }
+                }
+            });
+
 
             // root
             BorderPane root = new BorderPane();
