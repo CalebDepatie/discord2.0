@@ -40,6 +40,7 @@ public class Main extends Application {
 
     private ExecutorService pool;
     protected BlockingQueue<Message> sending;
+    protected BlockingQueue<Message> receiving;
 
     boolean login(){
         Stage login = new Stage();
@@ -119,10 +120,11 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) throws Exception {
             sending = new ArrayBlockingQueue<Message>(3);
+            receiving = new ArrayBlockingQueue<Message>(5);
             pool = Executors.newFixedThreadPool(5);
 
             Music music = new Music();
-            music.SoundClipTest();
+            //music.SoundClipTest();
             //part of window that displays user's
             ListView<User> pplBox = new ListView<User>();
             pplBox.setPrefSize(220, 480);
@@ -221,6 +223,13 @@ public class Main extends Application {
             stage.setScene(scene);
             stage.show();
             login();
+
+        }
+
+        public void updateList() throws InterruptedException {
+            if(!receiving.isEmpty()) {
+                messages.add(receiving.take());
+            }
         }
 
     public static void main(String[] args) {

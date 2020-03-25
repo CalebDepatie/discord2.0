@@ -55,12 +55,13 @@ public class Communication implements Runnable{
         //Catches the initial message sent by the new connection and uses that as their name
         this.partner = new User(this.getString(), this.connection.getInetAddress());
         Platform.runLater(() -> this.parent.Users.add(this.partner));
-
         while (this.connection.isConnected()) {
             Message temp = new Message(this.getString(), this.partner.name);
             System.out.println(temp.toDebugString());
             Platform.runLater(() -> this.parent.messages.add(temp));
-            this.sendMessage();
+            if(!this.parent.sending.isEmpty()) {
+                this.sendMessage();
+            }
         }
         //TODO: Put actions to run on disconnect here
     }
@@ -92,12 +93,10 @@ public class Communication implements Runnable{
 
 
     public void sendMessage() {
-        if(!parent.sending.isEmpty()) {
-            try {
-                this.connection.getOutputStream().write(parent.sending.take().Content.getBytes());
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
-            }
+        try {
+            this.connection.getOutputStream().write(parent.sending.take().Content.getBytes());
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
         }
     }
 }
