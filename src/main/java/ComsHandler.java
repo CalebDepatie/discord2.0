@@ -79,7 +79,6 @@ public class ComsHandler {
             try {
                 this.connection.getOutputStream().write(this.message.getBytes());
                 this.connection.close();
-                System.out.println("sent");
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -132,24 +131,22 @@ public class ComsHandler {
                     e.printStackTrace();
                 }
             }
-            System.out.println("0");
             //Recievelock.lock();
             try {
-                System.out.println("1");
                 //Catches the initial message sent by the new connection and uses that as their name
                 this.partner = new User(this.getString(), this.connection.getInetAddress());
                 Platform.runLater(() -> parent.Users.add(this.partner));
             } finally {
                 //Recievelock.unlock();
             }
+            System.out.println(this.connection.isConnected());
 
-                while (this.connection.isConnected()) {
-                    System.out.println("2");
-                    Message temp;
-                    temp = new Message(this.getString(), this.partner.name);
-                    System.out.println(temp.toDebugString());
-                    Platform.runLater(() -> parent.messages.add(temp));
-                }
+            while (this.connection.isConnected()) {
+                Message temp;
+                temp = new Message(this.getString(), this.partner.name);
+                System.out.println(temp.toDebugString());
+                Platform.runLater(() -> parent.messages.add(temp));
+            }
         }
 
         public String getString() {
