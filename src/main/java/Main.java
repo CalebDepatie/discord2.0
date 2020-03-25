@@ -111,107 +111,109 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-            Music music = new Music();
-            music.SoundClipTest();
-            //part of window that displays users
-            ListView<User> pplBox = new ListView<User>();
-            pplBox.setPrefSize(220, 480);
-            pplBox.setId("pplBox");
-            Users = FXCollections.observableArrayList();
-            pplBox.setItems(Users);
-            //I wanted to set the CSS for these cells in particular, so I had to do this i think
-            pplBox.setCellFactory(cell -> new ListCell<User>() {
-                @Override
-                protected void updateItem(User user, boolean empty) {
-                    super.updateItem(user, empty);
-                    super.setId("pplBox");
-                    if(user == null || empty) {
-                        setText(null);
-                        setTooltip(null);
-                    } else {
-                        setText(user.toString());
-                        //setTooltip(new Tooltip(user.ip.toString()));
-                    }
+        Music music = new Music();
+        music.SoundClipTest();
+
+        //part of window that displays users
+        ListView<User> pplBox = new ListView<User>();
+        pplBox.setPrefSize(220, 480);
+        pplBox.setId("pplBox");
+        Users = FXCollections.observableArrayList();
+        pplBox.setItems(Users);
+        //I wanted to set the CSS for these cells in particular, so I had to do this i think
+        pplBox.setCellFactory(cell -> new ListCell<User>() {
+            @Override
+            protected void updateItem(User user, boolean empty) {
+                super.updateItem(user, empty);
+                super.setId("pplBox");
+                if(user == null || empty) {
+                    setText(null);
+                    setTooltip(null);
+                } else {
+                    setText(user.toString());
+                    //setTooltip(new Tooltip(user.ip.toString()));
                 }
-            });
+            }
+        });
 
-            TextField console = new TextField();
-            console.setId("console");
+        TextField console = new TextField();
+        console.setId("console");
 
-            //List of current messages
-            messages = FXCollections.observableArrayList();
+        //List of current messages
+        messages = FXCollections.observableArrayList();
 
-            // bottom respectively "button area"
-            HBox message = new HBox();
-            Button send = new Button("Send");
-            send.setOnAction(new EventHandler<ActionEvent>() {
-                public void handle(ActionEvent event) {
-                    Message temp = new Message(console.getText(), SenderName);
-                    System.out.println(temp.toDebugString());
-                    //add the message to observable list
-                    messages.add(temp);
-                    //Send the message to the other connected
-                    partner.sendMessage(temp.Content);
-                    //add message to the user's respective chat log
-                    try {
-                        ChatLog.add(temp);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    console.clear();
+        // bottom respectively "button area"
+        HBox message = new HBox();
+        Button send = new Button("Send");
+        send.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+                Message temp = new Message(console.getText(), SenderName);
+                System.out.println(temp.toDebugString());
+                //add the message to observable list
+                messages.add(temp);
+                //Send the message to the other connected
+                partner.sendMessage(temp.Content);
+                //add message to the user's respective chat log
+                try {
+                    ChatLog.add(temp);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            });
-            //update the console field
-            console.setPromptText("Write a message...");
-            console.setPrefWidth(570);
+                console.clear();
+            }
+        });
 
-            message.getChildren().addAll(console, send);
-            message.setAlignment(Pos.BOTTOM_LEFT);
+        //update the console field
+        console.setPromptText("Write a message...");
+        console.setPrefWidth(570);
 
-            //Object to display messages
-            ListView<Message> list = new ListView<Message>();
-            list.setItems(messages);
-            //Add cell tooltip once cursor hovers over a sent message
-            list.setCellFactory(cell -> new ListCell<Message>() {
-                @Override
-                protected void updateItem(Message message, boolean empty) {
-                    super.updateItem(message, empty);
-                    if(message == null || empty) {
-                        setText(null);
-                        setTooltip(null);
-                    } else {
-                        SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-                        setText(message.toString());
-                        setTooltip(new Tooltip(fmt.format(message.Time.getTime())));
-                    }
+        message.getChildren().addAll(console, send);
+        message.setAlignment(Pos.BOTTOM_LEFT);
+
+        //Object to display messages
+        ListView<Message> list = new ListView<Message>();
+        list.setItems(messages);
+        //Add cell tooltip once cursor hovers over a sent message
+        list.setCellFactory(cell -> new ListCell<Message>() {
+            @Override
+            protected void updateItem(Message message, boolean empty) {
+                super.updateItem(message, empty);
+                if(message == null || empty) {
+                    setText(null);
+                    setTooltip(null);
+                } else {
+                    SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                    setText(message.toString());
+                    setTooltip(new Tooltip(fmt.format(message.Time.getTime())));
                 }
-            });
+            }
+        });
 
-            // root to setup chat window
-            BorderPane root = new BorderPane();
-            root.setPadding(new Insets(20)); // space between elements and window border
-            root.setBottom(message);
-            root.setCenter(list);
-            root.setMargin(list, new Insets(0,20,20,0));
-            root.setRight(pplBox);
+        // root to setup chat window
+        BorderPane root = new BorderPane();
+        root.setPadding(new Insets(20)); // space between elements and window border
+        root.setBottom(message);
+        root.setCenter(list);
+        root.setMargin(list, new Insets(0,20,20,0));
+        root.setRight(pplBox);
 
-            //Press enter activates the 'send' button
-            root.addEventHandler(KeyEvent.KEY_PRESSED, ev -> {
-                if (ev.getCode() == KeyCode.ENTER) {
-                    send.fire();
-                    ev.consume();
-                }
-            });
+        //Press enter activates the 'send' button
+        root.addEventHandler(KeyEvent.KEY_PRESSED, ev -> {
+            if (ev.getCode() == KeyCode.ENTER) {
+                send.fire();
+                ev.consume();
+            }
+        });
 
-            //display the chat window
-            Scene scene = new Scene(root, 900, 500);
-            scene.getStylesheets().add("style.css");
-            stage.setTitle("Discord 2.0");
-            stage.getIcons().add(new Image(Main.class.getResourceAsStream("icon.png")));
-            stage.setScene(scene);
-            stage.show();
-            login();
-        }
+        //display the chat window
+        Scene scene = new Scene(root, 900, 500);
+        scene.getStylesheets().add("style.css");
+        stage.setTitle("Discord 2.0");
+        stage.getIcons().add(new Image(Main.class.getResourceAsStream("icon.png")));
+        stage.setScene(scene);
+        stage.show();
+        login();
+    }
 
     public static void main(String[] args) {
         launch(args);
