@@ -13,3 +13,10 @@ Ben Armstrong - digital-drreams
 
 Rowan Birnbaum - NinjaRow
 
+Caleb: Gradle support, message display, message tooltips, user display, app icon, general bug fixes, multithreading.
+
+Alexa: Original UI, UI styling, music.
+
+Ben: Socket functionality, general bug fixes.
+
+Rowan: file io, general commenting, readme file.
