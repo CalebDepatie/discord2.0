@@ -31,6 +31,7 @@ public class Main extends Application {
 
     public String SenderName;
     public ObservableList<User> Users;
+    private Communication partner;
 
     boolean login(){
         Stage login = new Stage();
@@ -81,7 +82,9 @@ public class Main extends Application {
                 }
 
                 //Boot up a Communication with the input IP/Port
-                Communication primary = new Communication(ipInput.getText(), Integer.valueOf(portInput.getText()), Main.this);
+                partner = new Communication(ipInput.getText(), Integer.valueOf(portInput.getText()), Main.this);
+                Thread primary = new Thread(partner);
+                primary.start();
 
                 login.close();
             }
@@ -144,6 +147,8 @@ public class Main extends Application {
                     System.out.println(temp.toDebugString());
                     //add the message to observable list
                     messages.add(temp);
+                    //Send the message to the other connected
+                    partner.sendMessage(temp.Content);
                     //add message to the user's respective chat log
                     try {
                         ChatLog.add(temp);
