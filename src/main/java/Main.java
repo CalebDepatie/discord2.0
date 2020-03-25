@@ -13,6 +13,7 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.File;
@@ -110,6 +111,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+            Music music = new Music();
+            music.SoundClipTest();
             //part of window that displays users
             ListView<User> pplBox = new ListView<User>();
             pplBox.setPrefSize(220, 480);
@@ -204,6 +207,7 @@ public class Main extends Application {
             Scene scene = new Scene(root, 900, 500);
             scene.getStylesheets().add("style.css");
             stage.setTitle("Discord 2.0");
+            stage.getIcons().add(new Image(Main.class.getResourceAsStream("icon.png")));
             stage.setScene(scene);
             stage.show();
             login();

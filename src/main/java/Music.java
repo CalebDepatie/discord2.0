@@ -1,7 +1,8 @@
-package sample;
-
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -13,8 +14,8 @@ public class Music{
 
     public void SoundClipTest() {
         try {
-            File soundFile = new File("Music.wav");
-            AudioInputStream audioIn = AudioSystem.getAudioInputStream(soundFile);
+            URL soundStream = getClass().getResource("Music.wav");
+            AudioInputStream audioIn = AudioSystem.getAudioInputStream(soundStream);
             Clip clip = AudioSystem.getClip();
             clip.open(audioIn);
             clip.start();
