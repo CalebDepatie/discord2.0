@@ -119,7 +119,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-            sending = new ArrayBlockingQueue<Message>(3);
+            sending = new ArrayBlockingQueue<Message>(10);
             receiving = new ArrayBlockingQueue<Message>(5);
             pool = Executors.newFixedThreadPool(5);
 
@@ -177,7 +177,60 @@ public class Main extends Application {
             console.setPromptText("Write a message...");
             console.setPrefWidth(570);
 
-            message.getChildren().addAll(console, send);
+            Button addConnection = new Button("Add Connection");
+            addConnection.setOnAction(new EventHandler<ActionEvent>() {
+                public void handle(ActionEvent event) {
+                    Stage add = new Stage();
+
+                    //create login window
+                    GridPane grid = new GridPane();
+                    grid.setPadding(new Insets(10, 10, 10, 10));
+                    grid.setVgap(5);
+                    grid.setHgap(5);
+
+                    TextField ipInput = new TextField();
+                    ipInput.setPromptText("Enter Target IP");
+                    grid.add(ipInput, 1, 1);
+
+                    Text ipLabel = new Text("IP:");
+                    grid.add(ipLabel, 0, 1);
+
+                    TextField portInput = new TextField();
+                    portInput.setPromptText("Enter Target Port");
+                    grid.add(portInput, 1, 2);
+
+                    Text portLabel = new Text("Port:");
+                    grid.add(portLabel, 0, 2);
+
+                    Button confirm = new Button("Confirm");
+                    grid.add(confirm, 1, 3);
+
+                    //action event when user inputs the username
+                    confirm.setOnAction(new EventHandler<ActionEvent>() {
+                        @Override
+                        public void handle(ActionEvent actionEvent) {
+                            //Boot up a Communication with the input IP/Port
+                            partner = new Communication(ipInput.getText(), Integer.valueOf(portInput.getText()), Main.this);
+                            Thread primary = new Thread(partner);
+                            pool.submit(primary);
+                            add.close();
+                        }
+                    });
+                    grid.addEventHandler(KeyEvent.KEY_PRESSED, ev -> {
+                        if (ev.getCode() == KeyCode.ENTER) {
+                            confirm.fire();
+                            ev.consume();
+                        }
+                    });
+
+                    //display the login window
+                    Scene start = new Scene(grid, 250, 150);
+                    add.setScene(start);
+                    add.show();
+                }
+            });
+
+            message.getChildren().addAll(console, send, addConnection);
             message.setAlignment(Pos.BOTTOM_LEFT);
 
             //Object to display messages

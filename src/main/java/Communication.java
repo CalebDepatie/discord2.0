@@ -56,9 +56,15 @@ public class Communication implements Runnable{
         this.partner = new User(this.getString(), this.connection.getInetAddress());
         Platform.runLater(() -> this.parent.Users.add(this.partner));
         while (this.connection.isConnected()) {
-            Message temp = new Message(this.getString(), this.partner.name);
-            System.out.println(temp.toDebugString());
-            Platform.runLater(() -> this.parent.messages.add(temp));
+            try {
+                if(this.connection.getInputStream().available() != 0) {
+                    Message temp = new Message(this.getString(), this.partner.name);
+                    System.out.println(temp.toDebugString());
+                    Platform.runLater(() -> this.parent.messages.add(temp));
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             if(!this.parent.sending.isEmpty()) {
                 this.sendMessage();
             }
@@ -80,9 +86,10 @@ public class Communication implements Runnable{
         try {
             String output = String.valueOf((char)in.read());
             byte[] buffer = new byte[in.available()];
-
             in.read(buffer);
             output = output.concat(new String(buffer));
+
+            System.out.println(output);
 
             return output;
         } catch (IOException e) {
