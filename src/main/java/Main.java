@@ -114,7 +114,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-            Coms = new ComsHandler();
+            Coms = new ComsHandler(Main.this);
 
             Music music = new Music();
             music.SoundClipTest();

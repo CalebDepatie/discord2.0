@@ -13,9 +13,10 @@ public class ComsHandler {
     protected ExecutorService pool;
     protected Vector<Connection> connections;
 
-    public ComsHandler() {
+    public ComsHandler(Main parent) {
+        this.parent = parent;
         connections = new Vector<Connection>();
-        pool = Executors.newCachedThreadPool();
+        pool = Executors.newFixedThreadPool(10);
     }
 
     public void addConnection(String ip, int port) {
@@ -68,6 +69,7 @@ public class ComsHandler {
         public void run() {
             try {
                 this.connection.getOutputStream().write(this.message.getBytes());
+                this.connection.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
