@@ -1,6 +1,6 @@
 import java.net.InetAddress;
 
-//Class to hold identifiying info for the User
+//Class to hold identifying info for the User
 public class User {
     public String name;
     public InetAddress ip;

@@ -20,13 +20,26 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class Main extends Application {
 
+    //TODO: implement a blockingQueue and privatize messages again (don't forget to change Communication so that it passes it into the new BlockingQueue)
+    public ObservableList<Message> messages;
+
     public String SenderName;
     public ObservableList<User> Users;
+    private Communication partner;
+
+    private ExecutorService pool;
+    protected BlockingQueue<Message> sending;
 
     boolean login(){
         Stage login = new Stage();
@@ -46,8 +59,22 @@ public class Main extends Application {
         Text label = new Text("UserName:");
         grid.add(label,0, 0);
 
+        TextField ipInput = new TextField();
+        ipInput.setPromptText("Enter Target IP");
+        grid.add(ipInput, 1, 1);
+
+        Text ipLabel = new Text("IP:");
+        grid.add(ipLabel, 0, 1);
+
+        TextField portInput = new TextField();
+        portInput.setPromptText("Enter Target Port");
+        grid.add(portInput, 1, 2);
+
+        Text portLabel = new Text("Port:");
+        grid.add(portLabel, 0, 2);
+
         Button confirm = new Button("Confirm");
-        grid.add(confirm, 1, 1);
+        grid.add(confirm, 1, 3);
 
         //action event when user inputs the username
         confirm.setOnAction(new EventHandler<ActionEvent>() {
@@ -55,7 +82,18 @@ public class Main extends Application {
             public void handle(ActionEvent actionEvent) {
                 userName[0] = user.getText();
                 SenderName = userName[0].toString(); //define the senders name internally
-                Users.add(new User(SenderName, null)); //Add self to user list
+
+                try {
+                    Users.add(new User(SenderName, InetAddress.getLocalHost())); //Add self to user list
+                } catch (UnknownHostException e) {
+                    Users.add(new User(SenderName, null));
+                }
+
+                //Boot up a Communication with the input IP/Port
+                partner = new Communication(ipInput.getText(), Integer.valueOf(portInput.getText()), Main.this);
+                Thread primary = new Thread(partner);
+                pool.submit(primary);
+
                 login.close();
             }
         });
@@ -67,7 +105,7 @@ public class Main extends Application {
         });
 
         //display the login window
-        Scene start = new Scene(grid, 300, 80);
+        Scene start = new Scene(grid, 250, 150);
         login.setScene(start);
         login.show();
 
@@ -80,6 +118,9 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+            sending = new ArrayBlockingQueue<Message>(3);
+            pool = Executors.newFixedThreadPool(5);
+
             Music music = new Music();
             music.SoundClipTest();
             //part of window that displays user's
@@ -108,7 +149,7 @@ public class Main extends Application {
             console.setId("console");
 
             //List of current messages
-            ObservableList<Message> messages = FXCollections.observableArrayList();
+            messages = FXCollections.observableArrayList();
 
             // bottom respectively "button area"
             HBox message = new HBox();
@@ -119,6 +160,8 @@ public class Main extends Application {
                     System.out.println(temp.toDebugString());
                     //add the message to observable list
                     messages.add(temp);
+                    //Send the message to the other connected
+                    sending.add(temp);
                     //add message to the user's respective chat log
                     try {
                         ChatLog.add(temp);
