@@ -32,7 +32,9 @@ public class Main extends Application {
 
     public String SenderName;
     public ObservableList<User> Users;
+    private ComsHandler Coms;
     private Communication partner;
+    private int port = 7000; //Hardcoded port lookup
 
     boolean login(){
         Stage login = new Stage();
@@ -59,12 +61,12 @@ public class Main extends Application {
         Text ipLabel = new Text("IP:");
         grid.add(ipLabel, 0, 1);
 
-        TextField portInput = new TextField();
-        portInput.setPromptText("Enter Target Port");
-        grid.add(portInput, 1, 2);
+        //TextField portInput = new TextField();
+        //portInput.setPromptText("Enter Target Port");
+        //grid.add(portInput, 1, 2);
 
-        Text portLabel = new Text("Port:");
-        grid.add(portLabel, 0, 2);
+        //Text portLabel = new Text("Port:");
+        //grid.add(portLabel, 0, 2);
 
         Button confirm = new Button("Confirm");
         grid.add(confirm, 1, 3);
@@ -83,9 +85,10 @@ public class Main extends Application {
                 }
 
                 //Boot up a Communication with the input IP/Port
-                partner = new Communication(ipInput.getText(), Integer.valueOf(portInput.getText()), Main.this);
-                Thread primary = new Thread(partner);
-                primary.start();
+                //partner = new Communication(ipInput.getText(), port, Main.this);
+                //Thread primary = new Thread(partner);
+                //primary.start();
+                Coms.addConnection(ipInput.getText(), port);
 
                 login.close();
             }
@@ -111,6 +114,8 @@ public class Main extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+            Coms = new ComsHandler();
+
             Music music = new Music();
             music.SoundClipTest();
             //part of window that displays users
@@ -151,7 +156,8 @@ public class Main extends Application {
                     //add the message to observable list
                     messages.add(temp);
                     //Send the message to the other connected
-                    partner.sendMessage(temp.Content);
+                    Coms.sendMessage(temp.Content);
+                    //partner.sendMessage(temp.Content);
                     //add message to the user's respective chat log
                     try {
                         ChatLog.add(temp);
