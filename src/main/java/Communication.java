@@ -1,6 +1,12 @@
+import javafx.application.Platform;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
+
 
 public class Communication implements Runnable{
     private Socket connection;
@@ -19,7 +25,8 @@ public class Communication implements Runnable{
                 isServer = true;
                 //In the future this could be more secure by checking to make sure the incoming connection is from the specified IP
                 this.backup = new ServerSocket(port);
-                this.parent.messages.add(new Message("Connection Failed. Waiting for response on local port...", "ERROR"));
+                //runLater to avoid errors caused by UI updates forced by non-FX application thread
+                Platform.runLater(() -> this.parent.messages.add(new Message("Connection Failed. Waiting for response on local port...", "ERROR")));
             } catch (Exception f) {
                 e.printStackTrace();
                 f.printStackTrace();
@@ -31,8 +38,13 @@ public class Communication implements Runnable{
     public void run() {
         if (isServer) {
             try {
+                //TODO: This IP display is a TEMPORARY MEASURE, implement a more elegant display for the host (that is hidden until you click show so we don't get anyone interrupting the demo)
+                //Also, if anyone knows a better, more streamlined way to get the external ip PLEASE write it in
+                URL ip = new URL("http://checkip.amazonaws.com/");
+                System.out.println(this.getString(ip.openStream()));
+
                 this.connection = this.backup.accept();
-                this.sendMessage(this.parent.SenderName);
+                Platform.runLater(() -> this.sendMessage(this.parent.SenderName));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -40,24 +52,32 @@ public class Communication implements Runnable{
 
         //Catches the initial message sent by the new connection and uses that as their name
         this.partner = new User(this.getString(), this.connection.getInetAddress());
-        this.parent.Users.add(this.partner);
+        Platform.runLater(() -> this.parent.Users.add(this.partner));
 
         while (this.connection.isConnected()) {
-            //TODO: Consider maybe making a public method in Main for message addition? (maybe after blockingQueue)
             Message temp = new Message(this.getString(), this.partner.name);
             System.out.println(temp.toDebugString());
-            //add the message to observable list
-            this.parent.messages.add(temp);
+            Platform.runLater(() -> this.parent.messages.add(temp));
         }
         //TODO: Put actions to run on disconnect here
     }
 
+
     public String getString() {
         try {
-            String output = String.valueOf((char)this.connection.getInputStream().read());
-            byte[] buffer = new byte[this.connection.getInputStream().available()];
+            return getString(this.connection.getInputStream());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-            this.connection.getInputStream().read(buffer);
+    public String getString(InputStream in) {
+        try {
+            String output = String.valueOf((char)in.read());
+            byte[] buffer = new byte[in.available()];
+
+            in.read(buffer);
             output = output.concat(new String(buffer));
 
             return output;
@@ -66,6 +86,7 @@ public class Communication implements Runnable{
             return null;
         }
     }
+
 
     public void sendMessage(String message) {
         try {
