@@ -113,6 +113,7 @@ public class Main extends Application {
     public void start(Stage stage) throws Exception {
         Music music = new Music();
         music.SoundClipTest();
+        music.play();
 
         //part of window that displays users
         ListView<User> pplBox = new ListView<User>();
@@ -160,6 +161,23 @@ public class Main extends Application {
                     e.printStackTrace();
                 }
                 console.clear();
+            }
+        });
+        
+        //button to mute the background music
+        String[] status = {"Mute", "Unmute"};
+        Button mute = new Button(status[0]);
+        mute.setOnAction(new EventHandler<ActionEvent>() {
+            public void handle(ActionEvent event) {
+                if(mute.getText().equals("Mute")){
+                    music.stop();
+                    mute.setText(status[1]);
+                }
+                else{
+                    music.play();
+                    status[0] = "Mute";
+                    mute.setText(status[0]);
+                }
             }
         });
 
