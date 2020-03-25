@@ -12,10 +12,14 @@ public class Communication implements Runnable{
     private Socket connection;
     private ServerSocket backup;
     private Main parent;
+
+    protected Encryption encrypt;
+
     public User partner;
     public boolean isServer = false;
 
-    public Communication(String ip, int port, Main parent) {
+    public Communication(String ip, int port, Main parent, String key) {
+        encrypt = new Encryption(key);
         try {
             this.parent = parent;
             this.connection = new Socket(ip, port);
@@ -89,10 +93,8 @@ public class Communication implements Runnable{
             in.read(buffer);
             output = output.concat(new String(buffer));
 
-            System.out.println(output);
-
-            return output;
-        } catch (IOException e) {
+            return encrypt.decrypt(output);
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
@@ -101,8 +103,9 @@ public class Communication implements Runnable{
 
     public void sendMessage() {
         try {
-            this.connection.getOutputStream().write(parent.sending.take().Content.getBytes());
-        } catch (IOException | InterruptedException e) {
+            String encryptedMessage = encrypt.encrypt(parent.sending.take());
+            this.connection.getOutputStream().write(encryptedMessage.getBytes());
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
