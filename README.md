@@ -17,6 +17,6 @@ Caleb: Gradle support, message display, message tooltips, user display, app icon
 
 Alexa: Original UI, UI styling, music.
 
-Ben: Socket functionality, general bug fixes.
+Ben: Socket functionality, general bug fixes, multithreading.
 
 Rowan: file io, general commenting, readme file.
