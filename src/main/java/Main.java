@@ -117,7 +117,7 @@ public class Main extends Application {
             Coms = new ComsHandler(Main.this);
 
             Music music = new Music();
-            music.SoundClipTest();
+            //music.SoundClipTest();
             //part of window that displays users
             ListView<User> pplBox = new ListView<User>();
             pplBox.setPrefSize(220, 480);

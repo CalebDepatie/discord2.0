@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class ComsHandler {
     protected Main parent;
@@ -21,8 +24,8 @@ public class ComsHandler {
 
     public void addConnection(String ip, int port) {
         connections.add(new Connection(ip, port));
-        pool.submit(new Thread(new ReceieveThread(ip, port)));
         pool.submit(new Thread(new SendThread(ip, port, parent.SenderName)));
+        pool.submit(new Thread(new ReceieveThread(ip, port)));
     }
 
     public void sendMessage(String message) {
@@ -41,12 +44,15 @@ public class ComsHandler {
     }
 
     private class SendThread implements Runnable {
+        private final Lock Sendlock;
         private Socket connection;
         private ServerSocket backup;
         public boolean isServer = false;
         private String message;
 
         public SendThread(String ip, int port, String message) {
+            Sendlock = new ReentrantLock();
+            //Sendlock.lock();
             try {
                 parent = parent;
                 this.connection = new Socket(ip, port);
@@ -61,17 +67,23 @@ public class ComsHandler {
                 } catch (Exception f) {
                     e.printStackTrace();
                     f.printStackTrace();
+                } finally {
+                    //Sendlock.unlock();
                 }
             }
         }
 
         @Override
         public void run() {
+            //Sendlock.lock();
             try {
                 this.connection.getOutputStream().write(this.message.getBytes());
                 this.connection.close();
+                System.out.println("sent");
             } catch (IOException e) {
                 e.printStackTrace();
+            } finally {
+                //Sendlock.unlock();
             }
         }
     }
@@ -81,8 +93,11 @@ public class ComsHandler {
         private ServerSocket backup;
         public User partner;
         public boolean isServer = false;
+        private final Lock Recievelock;
 
         public ReceieveThread(String ip, int port) {
+            Recievelock = new ReentrantLock();
+            //Recievelock.lock();
             try {
                 parent = parent;
                 this.connection = new Socket(ip, port);
@@ -96,21 +111,45 @@ public class ComsHandler {
                 } catch (Exception f) {
                     e.printStackTrace();
                     f.printStackTrace();
+                } finally {
+                    //Recievelock.unlock();
                 }
             }
         }
 
         @Override
         public void run() {
-            //Catches the initial message sent by the new connection and uses that as their name
-            this.partner = new User(this.getString(), this.connection.getInetAddress());
-            Platform.runLater(() -> parent.Users.add(this.partner));
+            if (isServer) {
+                try {
+                    //TODO: This IP display is a TEMPORARY MEASURE, implement a more elegant display for the host (that is hidden until you click show so we don't get anyone interrupting the demo)
+                    //Also, if anyone knows a better, more streamlined way to get the external ip PLEASE write it in
+                    URL ip = new URL("http://checkip.amazonaws.com/");
+                    System.out.println(this.getString(ip.openStream()));
 
-            while (this.connection.isConnected()) {
-                Message temp = new Message(this.getString(), this.partner.name);
-                System.out.println(temp.toDebugString());
-                Platform.runLater(() -> parent.messages.add(temp));
+                    this.connection = this.backup.accept();
+                    Platform.runLater(() -> sendMessage(parent.SenderName));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
+            System.out.println("0");
+            //Recievelock.lock();
+            try {
+                System.out.println("1");
+                //Catches the initial message sent by the new connection and uses that as their name
+                this.partner = new User(this.getString(), this.connection.getInetAddress());
+                Platform.runLater(() -> parent.Users.add(this.partner));
+            } finally {
+                //Recievelock.unlock();
+            }
+
+                while (this.connection.isConnected()) {
+                    System.out.println("2");
+                    Message temp;
+                    temp = new Message(this.getString(), this.partner.name);
+                    System.out.println(temp.toDebugString());
+                    Platform.runLater(() -> parent.messages.add(temp));
+                }
         }
 
         public String getString() {
@@ -124,7 +163,14 @@ public class ComsHandler {
 
         public String getString(InputStream in) {
             try {
-                String output = String.valueOf((char)in.read());
+                String output;
+                //Recievelock.lock();
+                try{
+                    output = String.valueOf((char)in.read());
+                } finally {
+                    //Recievelock.unlock();
+                }
+
                 byte[] buffer = new byte[in.available()];
 
                 in.read(buffer);
