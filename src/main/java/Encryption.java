@@ -13,8 +13,8 @@ public class Encryption {
 
         try {
             //Uses AES encryption without padding
-            SecretKeySpec secret = new SecretKeySpec(this.encryptionKey.getBytes(),"AES/GCM/NoPadding");
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding"); //Initialise the cipher with AES no padding
+            SecretKeySpec secret = new SecretKeySpec(this.encryptionKey.getBytes(),"Blowfish");
+            Cipher cipher = Cipher.getInstance("Blowfish"); //Initialise the cipher with AES no padding
             cipher.init(Cipher.ENCRYPT_MODE, secret);
             byte[] encrypted = cipher.doFinal(message.Content.getBytes());
             encryptedString = new String(encrypted);
@@ -31,8 +31,8 @@ public class Encryption {
 
         try {
             //Uses AES encryption without padding
-            SecretKeySpec secret = new SecretKeySpec(this.encryptionKey.getBytes(),"AES/GCM/NoPadding");
-            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding"); //Initialise the cipher with AES no padding
+            SecretKeySpec secret = new SecretKeySpec(this.encryptionKey.getBytes(),"Blowfish");
+            Cipher cipher = Cipher.getInstance("Blowfish"); //Initialise the cipher with AES no padding
             cipher.init(Cipher.DECRYPT_MODE, secret);
             byte[] decrypted = cipher.doFinal(strEncrypted.getBytes());
             decryptedString = new String(decrypted);
