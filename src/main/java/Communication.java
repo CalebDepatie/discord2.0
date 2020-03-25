@@ -19,7 +19,8 @@ public class Communication implements Runnable{
         try {
             this.parent = parent;
             this.connection = new Socket(ip, port);
-            this.sendMessage(this.parent.SenderName);
+            this.parent.sending.add(new Message(this.parent.SenderName, this.parent.SenderName));
+            this.sendMessage();
         } catch (Exception e) {
             try {
                 isServer = true;
@@ -44,7 +45,8 @@ public class Communication implements Runnable{
                 System.out.println(this.getString(ip.openStream()));
 
                 this.connection = this.backup.accept();
-                Platform.runLater(() -> this.sendMessage(this.parent.SenderName));
+                this.parent.sending.add(new Message(this.parent.SenderName, this.parent.SenderName));
+                Platform.runLater(() -> this.sendMessage());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -53,11 +55,19 @@ public class Communication implements Runnable{
         //Catches the initial message sent by the new connection and uses that as their name
         this.partner = new User(this.getString(), this.connection.getInetAddress());
         Platform.runLater(() -> this.parent.Users.add(this.partner));
-
         while (this.connection.isConnected()) {
-            Message temp = new Message(this.getString(), this.partner.name);
-            System.out.println(temp.toDebugString());
-            Platform.runLater(() -> this.parent.messages.add(temp));
+            try {
+                if(this.connection.getInputStream().available() != 0) {
+                    Message temp = new Message(this.getString(), this.partner.name);
+                    System.out.println(temp.toDebugString());
+                    Platform.runLater(() -> this.parent.messages.add(temp));
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if(!this.parent.sending.isEmpty()) {
+                this.sendMessage();
+            }
         }
         //TODO: Put actions to run on disconnect here
     }
@@ -76,9 +86,10 @@ public class Communication implements Runnable{
         try {
             String output = String.valueOf((char)in.read());
             byte[] buffer = new byte[in.available()];
-
             in.read(buffer);
             output = output.concat(new String(buffer));
+
+            System.out.println(output);
 
             return output;
         } catch (IOException e) {
@@ -88,10 +99,10 @@ public class Communication implements Runnable{
     }
 
 
-    public void sendMessage(String message) {
+    public void sendMessage() {
         try {
-            this.connection.getOutputStream().write(message.getBytes());
-        } catch (IOException e) {
+            this.connection.getOutputStream().write(parent.sending.take().Content.getBytes());
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }

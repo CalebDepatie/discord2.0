@@ -11,12 +11,13 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 
 
 public class Music{
+    private Clip clip;
 
     public void SoundClipTest() {
         try {
             URL soundStream = getClass().getResource("Music.wav");
             AudioInputStream audioIn = AudioSystem.getAudioInputStream(soundStream);
-            Clip clip = AudioSystem.getClip();
+            clip = AudioSystem.getClip();
             clip.open(audioIn);
 
         } catch (UnsupportedAudioFileException e) {
