@@ -4,6 +4,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
 
 //TODO: put more static information as class variables
+//TODO: fix the initial key to work with PKCs5Padding
 public class Encryption {
     private String encryptionKey;
     private String encryptionMethod = "AES/CBC/PKCS5Padding";

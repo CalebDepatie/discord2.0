@@ -85,7 +85,7 @@ public class Communication implements Runnable {
     }
 
 
-    public String getString() {
+    public synchronized String getString() {
         try {
             return getString(this.connection.getInputStream());
         } catch (IOException e) {
@@ -110,7 +110,7 @@ public class Communication implements Runnable {
     }
 
 
-    public void sendMessage() {
+    public synchronized void sendMessage() {
         try {
             //String encryptedMessage = encrypt.encrypt(parent.sending.take());
             //this.connection.getOutputStream().write(encryptedMessage.getBytes());
