@@ -15,7 +15,9 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
+import javax.crypto.KeyGenerator;
 import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -34,11 +36,11 @@ public class Main extends Application {
     //TODO: implement a blockingQueue and privatize messages again (don't forget to change Communication so that it passes it into the new BlockingQueue)
     public ObservableList<Message> messages;
     public String SenderName;
-
     public ObservableList<User> Users;
-    private Communication partner;
-    private ExecutorService pool;
 
+    private Communication partner;
+
+    protected ExecutorService pool;
     protected BlockingQueue<Message> sending;
     protected BlockingQueue<Message> receiving;
     protected String EncryptionKey;
@@ -75,12 +77,12 @@ public class Main extends Application {
         Text portLabel = new Text("Port:");
         grid.add(portLabel, 0, 2);
 
-        TextField keyInput = new TextField();
-        keyInput.setPromptText("Enter Encryption Key");
-        grid.add(keyInput, 1, 3);
+        //TextField keyInput = new TextField();
+        //keyInput.setPromptText("Enter Encryption Key");
+        //grid.add(keyInput, 1, 3);
 
-        Text keyLabel = new Text("Key:");
-        grid.add(keyLabel, 0, 3);
+        //Text keyLabel = new Text("Key:");
+        //grid.add(keyLabel, 0, 3);
 
         Button confirm = new Button("Confirm");
         grid.add(confirm, 1, 4);
@@ -99,12 +101,14 @@ public class Main extends Application {
                 }
 
                 //Save encryption key
-                EncryptionKey = keyInput.getText();
+                //EncryptionKey = keyInput.getText();
+                EncryptionKey = "wsLdtfKvwDrdtfyvws5dtFyvwHrdHfyv";
 
                 //Boot up a Communication with the input IP/Port
                 partner = new Communication(ipInput.getText(), Integer.valueOf(portInput.getText()), Main.this, EncryptionKey);
-                Thread primary = new Thread(partner);
-                pool.submit(primary);
+                //Thread primary = new Thread(partner);
+                //pool.submit(primary);
+                pool.submit(partner);
 
                 login.close();
             }
@@ -132,7 +136,7 @@ public class Main extends Application {
     public void start(Stage stage) throws Exception {
             sending = new ArrayBlockingQueue<Message>(10);
             receiving = new ArrayBlockingQueue<Message>(5);
-            pool = Executors.newFixedThreadPool(5);
+            pool = Executors.newCachedThreadPool(); //Dynamic thread pool
 
             Music music = new Music();
             music.SoundClipTest();
@@ -306,6 +310,16 @@ public class Main extends Application {
         stage.setTitle("Discord 2.0");
         stage.getIcons().add(new Image(Main.class.getResourceAsStream("icon.png")));
         stage.setScene(scene);
+
+        //Turn everything off on close
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            public void handle(WindowEvent we) {
+                pool.shutdownNow();
+                music.stop();
+                Runtime.getRuntime().exit(0); //Bit heavy handed but hey it needs to shutdown
+            }
+        });
+
         stage.show();
         login();
     }
