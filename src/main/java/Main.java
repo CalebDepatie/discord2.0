@@ -37,8 +37,8 @@ public class Main extends Application {
     public ObservableList<Message> messages;
     public String SenderName;
     public ObservableList<User> Users;
+
     private Communication partner;
-    private int port = 7000; //Hardcoded port lookup
 
     protected ExecutorService pool;
     protected BlockingQueue<Message> sending;
@@ -70,12 +70,17 @@ public class Main extends Application {
         Text ipLabel = new Text("IP:");
         grid.add(ipLabel, 0, 1);
 
-        //TextField portInput = new TextField();
-        //portInput.setPromptText("Enter Target Port");
-        //grid.add(portInput, 1, 2);
+        TextField portInput = new TextField();
+        portInput.setPromptText("Enter Target Port");
+        grid.add(portInput, 1, 2);
 
-        //Text portLabel = new Text("Port:");
-        //grid.add(portLabel, 0, 2);
+        Text portLabel = new Text("Port:");
+        grid.add(portLabel, 0, 2);
+
+        Text portError = new Text("Port must be an integer between 0 and 65535.");
+        portError.setFill(Color.DARKRED);
+        portError.setVisible(false);
+        grid.add(portError, 0, 3, 2, 1);
 
         //TextField keyInput = new TextField();
         //keyInput.setPromptText("Enter Encryption Key");
@@ -91,14 +96,15 @@ public class Main extends Application {
         confirm.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                userName[0] = user.getText();
-                SenderName = userName[0].toString(); //define the senders name internally
+                if (!portError.isVisible()){
+                    userName[0] = user.getText();
+                    SenderName = userName[0].toString(); //define the senders name internally
 
-                try {
-                    Users.add(new User(SenderName, InetAddress.getLocalHost())); //Add self to user list
-                } catch (UnknownHostException e) {
-                    Users.add(new User(SenderName, null));
-                }
+                    try {
+                        Users.add(new User(SenderName, InetAddress.getLocalHost())); //Add self to user list
+                    } catch (UnknownHostException e) {
+                        Users.add(new User(SenderName, null));
+                    }
 
                 //Save encryption key
                 //EncryptionKey = keyInput.getText();
@@ -110,7 +116,8 @@ public class Main extends Application {
                 //pool.submit(primary);
                 pool.submit(partner);
 
-                login.close();
+                    login.close();
+                }
             }
         });
         grid.addEventHandler(KeyEvent.KEY_PRESSED, ev -> {
@@ -119,9 +126,17 @@ public class Main extends Application {
                 ev.consume();
             }
         });
+        //Show an error message if an invalid port is in the port input
+        portInput.textProperty().addListener((observableValue, old, n) -> {
+            try {
+                portError.setVisible(Integer.valueOf(n) < 0 || Integer.valueOf(n) > 65535);
+            } catch (NumberFormatException e) {
+                portError.setVisible(true);
+            }
+        });
 
         //display the login window
-        Scene start = new Scene(grid, 250, 160);
+        Scene start = new Scene(grid, 260, 150);
         login.setScene(start);
         login.show();
 
@@ -216,24 +231,38 @@ public class Main extends Application {
                     Text portLabel = new Text("Port:");
                     grid2.add(portLabel, 0, 2);
 
+                    Text portError = new Text("Port must be an integer between 0 and 65535.");
+                    portError.setFill(Color.DARKRED);
+                    portError.setVisible(false);
+                    grid2.add(portError, 0, 3, 2, 1);
+
                     Button confirm = new Button("Confirm");
-                    grid2.add(confirm, 1, 3);
+                    grid2.add(confirm, 1, 4);
 
                     //action event when user inputs the username
                     confirm.setOnAction(new EventHandler<ActionEvent>() {
                         @Override
                         public void handle(ActionEvent actionEvent) {
-                            //Boot up a Communication with the input IP/Port
-                            partner = new Communication(ipInput.getText(), Integer.valueOf(portInput.getText()), Main.this, EncryptionKey);
-                            Thread primary = new Thread(partner);
-                            pool.submit(primary);
-                            add.close();
+                            if (!portError.isVisible()) {
+                                //Boot up a Communication with the input IP/Port
+                                partner = new Communication(ipInput.getText(), Integer.valueOf(portInput.getText()), Main.this, EncryptionKey);
+                                Thread primary = new Thread(partner);
+                                pool.submit(primary);
+                                add.close();
+                            }
                         }
                     });
                     grid2.addEventHandler(KeyEvent.KEY_PRESSED, ev -> {
                         if (ev.getCode() == KeyCode.ENTER) {
                             confirm.fire();
                             ev.consume();
+                        }
+                    });
+                    portInput.textProperty().addListener((observableValue, old, n) -> {
+                        try {
+                            portError.setVisible(Integer.valueOf(n) < 0 || Integer.valueOf(n) > 65535);
+                        } catch (NumberFormatException e) {
+                            portError.setVisible(true);
                         }
                     });
 
