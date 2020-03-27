@@ -37,8 +37,8 @@ public class Main extends Application {
     public ObservableList<Message> messages;
     public String SenderName;
     public ObservableList<User> Users;
-
     private Communication partner;
+    private int port = 7000; //Hardcoded port lookup
 
     protected ExecutorService pool;
     protected BlockingQueue<Message> sending;
@@ -70,12 +70,12 @@ public class Main extends Application {
         Text ipLabel = new Text("IP:");
         grid.add(ipLabel, 0, 1);
 
-        TextField portInput = new TextField();
-        portInput.setPromptText("Enter Target Port");
-        grid.add(portInput, 1, 2);
+        //TextField portInput = new TextField();
+        //portInput.setPromptText("Enter Target Port");
+        //grid.add(portInput, 1, 2);
 
-        Text portLabel = new Text("Port:");
-        grid.add(portLabel, 0, 2);
+        //Text portLabel = new Text("Port:");
+        //grid.add(portLabel, 0, 2);
 
         //TextField keyInput = new TextField();
         //keyInput.setPromptText("Enter Encryption Key");
