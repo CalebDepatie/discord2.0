@@ -8,14 +8,18 @@ import java.net.Socket;
 import java.net.URL;
 
 
-public class Communication implements Runnable{
+public class Communication implements Runnable {
     private Socket connection;
     private ServerSocket backup;
     private Main parent;
+
+    protected Encryption encrypt;
+
     public User partner;
     public boolean isServer = false;
 
-    public Communication(String ip, int port, Main parent) {
+    public Communication(String ip, int port, Main parent, String key) {
+        encrypt = new Encryption(key);
         try {
             this.parent = parent;
             this.connection = new Socket(ip, port);
@@ -55,6 +59,14 @@ public class Communication implements Runnable{
         //Catches the initial message sent by the new connection and uses that as their name
         this.partner = new User(this.getString(), this.connection.getInetAddress());
         Platform.runLater(() -> this.parent.Users.add(this.partner));
+        //Close the connection when the runtime closes
+        Runtime.getRuntime().addShutdownHook(new Thread() {public void run(){
+            try {
+                connection.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }});
         while (this.connection.isConnected()) {
             try {
                 if(this.connection.getInputStream().available() != 0) {
@@ -73,7 +85,7 @@ public class Communication implements Runnable{
     }
 
 
-    public String getString() {
+    public synchronized String getString() {
         try {
             return getString(this.connection.getInputStream());
         } catch (IOException e) {
@@ -89,20 +101,21 @@ public class Communication implements Runnable{
             in.read(buffer);
             output = output.concat(new String(buffer));
 
-            System.out.println(output);
-
+            //return encrypt.decrypt(output);
             return output;
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
 
-    public void sendMessage() {
+    public synchronized void sendMessage() {
         try {
+            //String encryptedMessage = encrypt.encrypt(parent.sending.take());
+            //this.connection.getOutputStream().write(encryptedMessage.getBytes());
             this.connection.getOutputStream().write(parent.sending.take().Content.getBytes());
-        } catch (IOException | InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

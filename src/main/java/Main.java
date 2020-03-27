@@ -15,7 +15,9 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
+import javax.crypto.KeyGenerator;
 import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -33,14 +35,15 @@ public class Main extends Application {
 
     //TODO: implement a blockingQueue and privatize messages again (don't forget to change Communication so that it passes it into the new BlockingQueue)
     public ObservableList<Message> messages;
-
     public String SenderName;
     public ObservableList<User> Users;
+
     private Communication partner;
 
-    private ExecutorService pool;
+    protected ExecutorService pool;
     protected BlockingQueue<Message> sending;
     protected BlockingQueue<Message> receiving;
+    protected String EncryptionKey;
 
     boolean login(){
         Stage login = new Stage();
@@ -79,6 +82,13 @@ public class Main extends Application {
         portError.setVisible(false);
         grid.add(portError, 0, 3, 2, 1);
 
+        //TextField keyInput = new TextField();
+        //keyInput.setPromptText("Enter Encryption Key");
+        //grid.add(keyInput, 1, 3);
+
+        //Text keyLabel = new Text("Key:");
+        //grid.add(keyLabel, 0, 3);
+
         Button confirm = new Button("Confirm");
         grid.add(confirm, 1, 4);
 
@@ -96,10 +106,15 @@ public class Main extends Application {
                         Users.add(new User(SenderName, null));
                     }
 
-                    //Boot up a Communication with the input IP/Port
-                    partner = new Communication(ipInput.getText(), Integer.valueOf(portInput.getText()), Main.this);
-                    Thread primary = new Thread(partner);
-                    pool.submit(primary);
+                //Save encryption key
+                //EncryptionKey = keyInput.getText();
+                EncryptionKey = "wsLdtfKvwDrdtfyvws5dtFyvwHrdHfyv";
+
+                //Boot up a Communication with the input IP/Port
+                partner = new Communication(ipInput.getText(), Integer.valueOf(portInput.getText()), Main.this, EncryptionKey);
+                //Thread primary = new Thread(partner);
+                //pool.submit(primary);
+                pool.submit(partner);
 
                     login.close();
                 }
@@ -136,7 +151,7 @@ public class Main extends Application {
     public void start(Stage stage) throws Exception {
             sending = new ArrayBlockingQueue<Message>(10);
             receiving = new ArrayBlockingQueue<Message>(5);
-            pool = Executors.newFixedThreadPool(5);
+            pool = Executors.newCachedThreadPool(); //Dynamic thread pool
 
             Music music = new Music();
             music.SoundClipTest();
@@ -197,33 +212,32 @@ public class Main extends Application {
                 public void handle(ActionEvent event) {
                     Stage add = new Stage();
 
-                    //create login window
-                    GridPane grid = new GridPane();
-                    grid.setPadding(new Insets(10, 10, 10, 10));
-                    grid.setVgap(5);
-                    grid.setHgap(5);
+                    GridPane grid2 = new GridPane();
+                    grid2.setPadding(new Insets(10, 10, 10, 10));
+                    grid2.setVgap(5);
+                    grid2.setHgap(5);
 
                     TextField ipInput = new TextField();
                     ipInput.setPromptText("Enter Target IP");
-                    grid.add(ipInput, 1, 1);
+                    grid2.add(ipInput, 1, 1);
 
                     Text ipLabel = new Text("IP:");
-                    grid.add(ipLabel, 0, 1);
+                    grid2.add(ipLabel, 0, 1);
 
                     TextField portInput = new TextField();
                     portInput.setPromptText("Enter Target Port");
-                    grid.add(portInput, 1, 2);
+                    grid2.add(portInput, 1, 2);
 
                     Text portLabel = new Text("Port:");
-                    grid.add(portLabel, 0, 2);
+                    grid2.add(portLabel, 0, 2);
 
                     Text portError = new Text("Port must be an integer between 0 and 65535.");
                     portError.setFill(Color.DARKRED);
                     portError.setVisible(false);
-                    grid.add(portError, 0, 3, 2, 1);
+                    grid2.add(portError, 0, 3, 2, 1);
 
                     Button confirm = new Button("Confirm");
-                    grid.add(confirm, 1, 4);
+                    grid2.add(confirm, 1, 4);
 
                     //action event when user inputs the username
                     confirm.setOnAction(new EventHandler<ActionEvent>() {
@@ -231,14 +245,14 @@ public class Main extends Application {
                         public void handle(ActionEvent actionEvent) {
                             if (!portError.isVisible()) {
                                 //Boot up a Communication with the input IP/Port
-                                partner = new Communication(ipInput.getText(), Integer.valueOf(portInput.getText()), Main.this);
+                                partner = new Communication(ipInput.getText(), Integer.valueOf(portInput.getText()), Main.this, EncryptionKey);
                                 Thread primary = new Thread(partner);
                                 pool.submit(primary);
                                 add.close();
                             }
                         }
                     });
-                    grid.addEventHandler(KeyEvent.KEY_PRESSED, ev -> {
+                    grid2.addEventHandler(KeyEvent.KEY_PRESSED, ev -> {
                         if (ev.getCode() == KeyCode.ENTER) {
                             confirm.fire();
                             ev.consume();
@@ -253,7 +267,7 @@ public class Main extends Application {
                     });
 
                     //display the login window
-                    Scene start = new Scene(grid, 250, 150);
+                    Scene start = new Scene(grid2, 250, 150);
                     add.setScene(start);
                     add.show();
                 }
@@ -281,7 +295,7 @@ public class Main extends Application {
 
         //button to mute the background music
         String[] status = {"Mute", "Unmute"};
-        Button mute = new Button(status[0]);
+        Button mute = new Button(status[1]);
         mute.setOnAction(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent event) {
                 if(mute.getText().equals("Mute")){
@@ -325,6 +339,16 @@ public class Main extends Application {
         stage.setTitle("Discord 2.0");
         stage.getIcons().add(new Image(Main.class.getResourceAsStream("icon.png")));
         stage.setScene(scene);
+
+        //Turn everything off on close
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            public void handle(WindowEvent we) {
+                pool.shutdownNow();
+                music.stop();
+                Runtime.getRuntime().exit(0); //Bit heavy handed but hey it needs to shutdown
+            }
+        });
+
         stage.show();
         login();
     }

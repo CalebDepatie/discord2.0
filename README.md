@@ -3,7 +3,12 @@ CSCI2020U Group project
 
 Repo link: https://github.com/CalebDepatie/discord2.0.git
 
-Contributers: 
+## How to Compile and Run:
+
+Download the source code with `git clone https://github.com/CalebDepatie/discord2.0.git` and inside the newly created
+dir run `gradle build`, the compile jar will now be found under build/libs, you can move it and run anywhere.
+
+## Contributers: 
 
 Caleb Depatie - CalebDepatie
 
