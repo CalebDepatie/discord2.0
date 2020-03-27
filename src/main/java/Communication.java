@@ -8,18 +8,23 @@ import java.net.Socket;
 import java.net.URL;
 
 
-public class Communication implements Runnable{
+public class Communication implements Runnable {
     private Socket connection;
     private ServerSocket backup;
     private Main parent;
+
+    protected Encryption encrypt;
+
     public User partner;
     public boolean isServer = false;
 
-    public Communication(String ip, int port, Main parent) {
+    public Communication(String ip, int port, Main parent, String key) {
+        encrypt = new Encryption(key);
         try {
             this.parent = parent;
             this.connection = new Socket(ip, port);
-            this.sendMessage(this.parent.SenderName);
+            this.parent.sending.add(new Message(this.parent.SenderName, this.parent.SenderName));
+            this.sendMessage();
         } catch (Exception e) {
             try {
                 isServer = true;
@@ -44,7 +49,8 @@ public class Communication implements Runnable{
                 System.out.println(this.getString(ip.openStream()));
 
                 this.connection = this.backup.accept();
-                Platform.runLater(() -> this.sendMessage(this.parent.SenderName));
+                this.parent.sending.add(new Message(this.parent.SenderName, this.parent.SenderName));
+                Platform.runLater(() -> this.sendMessage());
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -53,17 +59,33 @@ public class Communication implements Runnable{
         //Catches the initial message sent by the new connection and uses that as their name
         this.partner = new User(this.getString(), this.connection.getInetAddress());
         Platform.runLater(() -> this.parent.Users.add(this.partner));
-
+        //Close the connection when the runtime closes
+        Runtime.getRuntime().addShutdownHook(new Thread() {public void run(){
+            try {
+                connection.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }});
         while (this.connection.isConnected()) {
-            Message temp = new Message(this.getString(), this.partner.name);
-            System.out.println(temp.toDebugString());
-            Platform.runLater(() -> this.parent.messages.add(temp));
+            try {
+                if(this.connection.getInputStream().available() != 0) {
+                    Message temp = new Message(this.getString(), this.partner.name);
+                    System.out.println(temp.toDebugString());
+                    Platform.runLater(() -> this.parent.messages.add(temp));
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if(!this.parent.sending.isEmpty()) {
+                this.sendMessage();
+            }
         }
         //TODO: Put actions to run on disconnect here
     }
 
 
-    public String getString() {
+    public synchronized String getString() {
         try {
             return getString(this.connection.getInputStream());
         } catch (IOException e) {
@@ -76,22 +98,24 @@ public class Communication implements Runnable{
         try {
             String output = String.valueOf((char)in.read());
             byte[] buffer = new byte[in.available()];
-
             in.read(buffer);
             output = output.concat(new String(buffer));
 
+            //return encrypt.decrypt(output);
             return output;
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
 
-    public void sendMessage(String message) {
+    public synchronized void sendMessage() {
         try {
-            this.connection.getOutputStream().write(message.getBytes());
-        } catch (IOException e) {
+            //String encryptedMessage = encrypt.encrypt(parent.sending.take());
+            //this.connection.getOutputStream().write(encryptedMessage.getBytes());
+            this.connection.getOutputStream().write(parent.sending.take().Content.getBytes());
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
